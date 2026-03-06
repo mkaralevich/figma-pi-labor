@@ -13,6 +13,7 @@ Use these tools to **read and manipulate the canvas** — creating, updating, an
 - `setProperties()` on an instance: TEXT, BOOLEAN, and INSTANCE_SWAP property names must be suffixed with `#<id>` (from `componentPropertyDefinitions`); VARIANT does not need the suffix
 - Text nodes require the font to be loaded before setting characters, fontSize, fontName, or alignment — font must exist in the document
 - `figma_detach_instance` also detaches all ancestor instances, not just the target
+- In `figma_run_script`, always use `figma.getNodeByIdAsync(id)` — never `figma.getNodeById` (sync version throws with dynamic-page access)
 - `figma_set_layout` requires `layoutMode` to be HORIZONTAL or VERTICAL before alignment or sizing modes take effect
 - Alternating writes to a ComponentNode and reads from its InstanceNode is slow — batch reads first, then writes
 

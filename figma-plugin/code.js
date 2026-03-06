@@ -279,8 +279,19 @@ async function executeCommand(command, params) {
     case "run_script": {
       // params.code: string — JS to run in the plugin context
       // The script has access to `figma` and must return a value (or a Promise).
+      // Patch getNodeById → getNodeByIdAsync so LLM-generated code doesn't need
+      // to remember the async variant when using dynamic-page documentAccess.
+      const proxy = new Proxy(figma, {
+        get(target, prop) {
+          if (prop === "getNodeById") {
+            return (id) => target.getNodeByIdAsync(id);
+          }
+          const val = target[prop];
+          return typeof val === "function" ? val.bind(target) : val;
+        },
+      });
       const fn = new Function("figma", `"use strict"; return (async () => { ${params.code} })()`);
-      return await fn(figma);
+      return await fn(proxy);
     }
 
     default:
