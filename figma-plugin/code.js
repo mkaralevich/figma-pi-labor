@@ -1,4 +1,4 @@
-// figma-pi plugin — main thread
+// figma-labor plugin — main thread
 // Receives commands from ui.html via postMessage, executes via Plugin API,
 // returns results back to ui.html.
 

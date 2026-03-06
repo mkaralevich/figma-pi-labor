@@ -1,5 +1,5 @@
 /**
- * figma-pi bridge server
+ * figma-labor bridge server
  *
  * Relays commands between the pi extension (HTTP) and the Figma plugin (WebSocket).
  *

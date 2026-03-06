@@ -1,6 +1,6 @@
-## figma-pi
+## figma-labor
 
-Live connection to Figma via the figma-pi bridge (Plugin API). Plugin: {{plugin_status}}
+Live connection to Figma via the figma-labor bridge (Plugin API). Plugin: {{plugin_status}}
 
 Use these tools to **read and manipulate the canvas** — creating, updating, and deleting nodes. For design inspection or code generation from a design, prefer the `get_design_context` / `get_screenshot` tools (figma-mcp) instead.
 

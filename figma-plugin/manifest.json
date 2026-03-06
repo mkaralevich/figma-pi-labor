@@ -11,6 +11,6 @@
 	"networkAccess": {
 		"allowedDomains": ["http://localhost:3846", "ws://localhost:3846"],
 		"devAllowedDomains": ["http://localhost:3846", "ws://localhost:3846"],
-		"reasoning": "Connects to local figma-pi bridge server for pi coding agent integration"
+		"reasoning": "Connects to local figma-labor bridge server for pi coding agent integration"
 	}
 }

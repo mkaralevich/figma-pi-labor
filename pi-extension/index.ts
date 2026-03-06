@@ -1,12 +1,12 @@
 /**
- * figma-pi extension for pi
+ * figma-labor extension for pi
  *
- * Registers write (and read) tools that talk to the figma-pi bridge server,
+ * Registers write (and read) tools that talk to the figma-labor bridge server,
  * which relays commands to the Figma plugin via WebSocket → Plugin API.
  *
  * Requires:
- *   1. Bridge server running at http://127.0.0.1:3846  (start with /figma-pi start)
- *   2. figma-pi plugin open inside Figma desktop app
+ *   1. Bridge server running at http://127.0.0.1:3846  (start with /figma-labor start)
+ *   2. figma-labor plugin open inside Figma desktop app
  *
  * Usage notes:
  *   @see ~/.pi/agent-shopify/notes/figma-node-traversal.md
@@ -98,7 +98,7 @@ async function startBridge(): Promise<boolean> {
 
   let spawnFailed = false;
   bridgeProc.on("error", (err) => {
-    console.error("[figma-pi] Bridge process error:", err.message);
+    console.error("[figma-labor] Bridge process error:", err.message);
     spawnFailed = true;
   });
 
@@ -135,14 +135,14 @@ async function runTool(command: string, params: Record<string, unknown>) {
 
   if (!status) {
     return {
-      content: [{ type: "text" as const, text: "figma-pi bridge is not running. Start pi fresh or run the bridge manually: cd ~/Git/figma-pi/bridge && npm start" }],
+      content: [{ type: "text" as const, text: "figma-labor bridge is not running. Start pi fresh or run the bridge manually: cd ~/Git/figma-labor/bridge && npm start" }],
       isError: true,
     };
   }
 
   if (status.plugin !== "connected") {
     return {
-      content: [{ type: "text" as const, text: "Figma plugin is not connected. Open the figma-pi plugin in Figma (Menu → Plugins → Development → figma-pi)." }],
+      content: [{ type: "text" as const, text: "Figma plugin is not connected. Open the figma-labor plugin in Figma (Menu → Plugins → Development → figma-labor)." }],
       isError: true,
     };
   }
@@ -155,7 +155,7 @@ async function runTool(command: string, params: Record<string, unknown>) {
   } catch (err) {
     const msg = err instanceof Error ? err.message : String(err);
     return {
-      content: [{ type: "text" as const, text: `figma-pi error: ${msg}` }],
+      content: [{ type: "text" as const, text: `figma-labor error: ${msg}` }],
       isError: true,
     };
   }
@@ -209,50 +209,50 @@ export default function (pi: ExtensionAPI) {
   });
 
   pi.registerCommand("figma-labor-start", {
-    description: "Start the figma-pi bridge server",
+    description: "Start the figma-labor bridge server",
     handler: async (_args, ctx) => {
       const already = await bridgeStatus();
       if (already) {
-        ctx.ui.notify(`figma-pi bridge is already running.\nPlugin: ${already.plugin}`, "info");
+        ctx.ui.notify(`figma-labor bridge is already running.\nPlugin: ${already.plugin}`, "info");
         startPolling(ctx);
         return;
       }
-      ctx.ui.notify("Starting figma-pi bridge...", "info");
+      ctx.ui.notify("Starting figma-labor bridge...", "info");
       const ok = await startBridge();
       if (!ok) {
         ctx.ui.setStatus("figma-labor", "figma-labor ✗");
-        ctx.ui.notify("Failed to start figma-pi bridge.\n\nMake sure bridge.js exists at:\n" + BRIDGE_BIN, "error");
+        ctx.ui.notify("Failed to start figma-labor bridge.\n\nMake sure bridge.js exists at:\n" + BRIDGE_BIN, "error");
         return;
       }
       const status = await bridgeStatus();
       cachedStatus = status;
       ctx.ui.setStatus("figma-labor", footerLabel(status?.plugin ?? "disconnected"));
-      ctx.ui.notify(`figma-pi bridge started.\nPlugin: ${status?.plugin ?? "disconnected"}`, "success");
+      ctx.ui.notify(`figma-labor bridge started.\nPlugin: ${status?.plugin ?? "disconnected"}`, "success");
       startPolling(ctx);
     },
   });
 
   pi.registerCommand("figma-labor-end", {
-    description: "Stop the figma-pi bridge server",
+    description: "Stop the figma-labor bridge server",
     handler: async (_args, ctx) => {
       stopPolling();
       stopBridge();
       cachedStatus = null;
       ctx.ui.setStatus("figma-labor", "figma-labor ✗");
-      ctx.ui.notify("figma-pi bridge stopped.", "info");
+      ctx.ui.notify("figma-labor bridge stopped.", "info");
     },
   });
 
-  pi.registerCommand("figma-pi", {
+  pi.registerCommand("figma-labor", {
     description: "Show Figma bridge server connection status",
     handler: async (_args, ctx) => {
       const status = await bridgeStatus();
       if (!status) {
-        ctx.ui.notify("figma-pi bridge is not running.\n\nRun /figma-pi-start to launch it.", "error");
+        ctx.ui.notify("figma-labor bridge is not running.\n\nRun /figma-labor-start to launch it.", "error");
         return;
       }
       ctx.ui.notify(
-        `figma-pi bridge: ${status.bridge}\nFigma plugin: ${status.plugin}`,
+        `figma-labor bridge: ${status.bridge}\nFigma plugin: ${status.plugin}`,
         status.plugin === "connected" ? "success" : "info"
       );
     },

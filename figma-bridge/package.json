@@ -1,5 +1,5 @@
 {
-  "name": "figma-pi-bridge",
+  "name": "figma-labor-bridge",
   "version": "0.1.0",
   "description": "Local bridge server between pi and the Figma plugin",
   "type": "module",

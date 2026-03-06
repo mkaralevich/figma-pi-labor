@@ -9,9 +9,9 @@ Connects [pi-coding-agent](https://github.com/badlogic/pi-mono) to Figma.
 
 - Place extension in your `/extensions` folder
 - Spin up bridge via `/figma-labor-start` command
-- Footer shows `figma-pi ○` when bridge is running
-- In Figma, open [Pi Labor plugin](https://www.figma.com/community/plugin/1611556075783258900/figma-pi) to start connection
-- Footer shows `figma-pi ✓` when the plugin is connected
+- Footer shows `figma-labor ○` when bridge is running
+- In Figma, open [Pi Labor plugin](https://www.figma.com/community/plugin/1611556075783258900/figma-labor) to start connection
+- Footer shows `figma-labor ✓` when the plugin is connected
 - Ask your pi to do things
 
 Use `figma-labor-stop` if you want to close connection.
