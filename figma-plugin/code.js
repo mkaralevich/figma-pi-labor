@@ -5,7 +5,7 @@
 figma.showUI(__html__, {
   width: 280,
   height: 360,
-  title: "figma-pi",
+  title: "Figma Labor",
   themeColors: true,
 });
 
@@ -267,6 +267,15 @@ async function executeCommand(command, params) {
       }
       node.editComponentProperty(params.property, { variantOptions: params.order });
       return node.componentPropertyDefinitions[params.property];
+    }
+
+    // ── Run script ─────────────────────────────────────────────────────────
+
+    case "run_script": {
+      // params.code: string — JS to run in the plugin context
+      // The script has access to `figma` and must return a value (or a Promise).
+      const fn = new Function("figma", `"use strict"; return (async () => { ${params.code} })()`);
+      return await fn(figma);
     }
 
     default:

@@ -498,6 +498,18 @@ export default function (pi: ExtensionAPI) {
   });
 
   pi.registerTool({
+    name: "figma_run_script",
+    label: "Figma Run Script",
+    description: "Run arbitrary JavaScript in the Figma plugin context. The script has full access to the `figma` Plugin API. Use `return` to return a value. Async is supported. Example: `return figma.currentPage.findAll(n => n.type === 'COMPONENT').length`",
+    parameters: Type.Object({
+      code: Type.String({ description: "JS code to execute. Has access to `figma`. Use return to return a value." }),
+    }),
+    async execute(_id, params) {
+      return runTool("run_script", { code: params.code });
+    },
+  });
+
+  pi.registerTool({
     name: "figma_undo",
     label: "Figma Undo",
     description: "Undo the last Figma operation. Call this immediately if a change was wrong.",
