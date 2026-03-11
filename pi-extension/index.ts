@@ -65,12 +65,13 @@ async function bridgeStatus(timeout = 2000): Promise<{ bridge: string; plugin: s
   }
 }
 
-async function bridgeCommand(command: string, params: Record<string, unknown>): Promise<unknown> {
+async function bridgeCommand(command: string, params: Record<string, unknown>, opts?: { timeout?: number }): Promise<unknown> {
+  const timeoutMs = opts?.timeout ?? 35_000;
   const res = await fetch(`${BRIDGE_URL}/command`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ command, params }),
-    signal: AbortSignal.timeout(15_000),
+    body: JSON.stringify({ command, params, timeout: opts?.timeout }),
+    signal: AbortSignal.timeout(timeoutMs + 5_000), // HTTP timeout > bridge timeout
   });
   const json = await res.json() as { result?: unknown; error?: string };
   if (json.error) throw new Error(json.error);
@@ -130,7 +131,7 @@ function footerLabel(plugin: string): string {
 
 // ## Tool wrapper
 
-async function runTool(command: string, params: Record<string, unknown>) {
+async function runTool(command: string, params: Record<string, unknown>, opts?: { timeout?: number }) {
   const status = await bridgeStatus();
 
   if (!status) {
@@ -148,7 +149,7 @@ async function runTool(command: string, params: Record<string, unknown>) {
   }
 
   try {
-    const result = await bridgeCommand(command, params);
+    const result = await bridgeCommand(command, params, opts);
     return {
       content: [{ type: "text" as const, text: JSON.stringify(result, null, 2) }],
     };
@@ -505,7 +506,7 @@ export default function (pi: ExtensionAPI) {
       code: Type.String({ description: "JS code to execute. Has access to `figma`. Use return to return a value." }),
     }),
     async execute(_id, params) {
-      return runTool("run_script", { code: params.code });
+      return runTool("run_script", { code: params.code }, { timeout: 60_000 });
     },
   });
 
