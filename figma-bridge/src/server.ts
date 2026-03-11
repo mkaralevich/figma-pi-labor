@@ -20,7 +20,7 @@ import { WebSocketServer, WebSocket } from "ws";
 import { randomUUID } from "node:crypto";
 
 const PORT = 3846;
-const COMMAND_TIMEOUT_MS = 10_000;
+const COMMAND_TIMEOUT_MS = 30_000;
 
 // ## Types
 
@@ -49,17 +49,18 @@ const pending = new Map<string, PendingCommand>();
 
 // ## Plugin communication
 
-function sendToPlugin(command: Command): Promise<unknown> {
+function sendToPlugin(command: Command, timeoutMs?: number): Promise<unknown> {
   return new Promise((resolve, reject) => {
     if (!pluginSocket || pluginSocket.readyState !== WebSocket.OPEN) {
       reject(new Error("Figma plugin is not connected. Make sure the plugin is open in Figma."));
       return;
     }
 
+    const effectiveTimeout = timeoutMs ?? COMMAND_TIMEOUT_MS;
     const timer = setTimeout(() => {
       pending.delete(command.id);
-      reject(new Error(`Command "${command.command}" timed out after ${COMMAND_TIMEOUT_MS}ms`));
-    }, COMMAND_TIMEOUT_MS);
+      reject(new Error(`Command "${command.command}" timed out after ${effectiveTimeout}ms`));
+    }, effectiveTimeout);
 
     pending.set(command.id, { resolve, reject, timer });
     pluginSocket.send(JSON.stringify(command));
@@ -123,7 +124,7 @@ const httpServer = http.createServer(async (req, res) => {
       return;
     }
 
-    const { command, params = {} } = body as { command?: string; params?: Record<string, unknown> };
+    const { command, params = {}, timeout } = body as { command?: string; params?: Record<string, unknown>; timeout?: number };
     if (!command) {
       sendJson(res, 400, { error: "Missing required field: command" });
       return;
@@ -131,7 +132,7 @@ const httpServer = http.createServer(async (req, res) => {
 
     const id = randomUUID();
     try {
-      const result = await sendToPlugin({ id, command, params });
+      const result = await sendToPlugin({ id, command, params }, timeout);
       sendJson(res, 200, { result });
     } catch (err) {
       const message = err instanceof Error ? err.message : String(err);

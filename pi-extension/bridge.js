@@ -3654,19 +3654,20 @@ var import_websocket_server = __toESM(require_websocket_server(), 1);
 // src/server.ts
 var import_node_crypto = require("node:crypto");
 var PORT = 3846;
-var COMMAND_TIMEOUT_MS = 1e4;
+var COMMAND_TIMEOUT_MS = 3e4;
 var pluginSocket = null;
 var pending = /* @__PURE__ */ new Map();
-function sendToPlugin(command) {
+function sendToPlugin(command, timeoutMs) {
   return new Promise((resolve, reject) => {
     if (!pluginSocket || pluginSocket.readyState !== import_websocket.default.OPEN) {
       reject(new Error("Figma plugin is not connected. Make sure the plugin is open in Figma."));
       return;
     }
+    const effectiveTimeout = timeoutMs ?? COMMAND_TIMEOUT_MS;
     const timer = setTimeout(() => {
       pending.delete(command.id);
-      reject(new Error(`Command "${command.command}" timed out after ${COMMAND_TIMEOUT_MS}ms`));
-    }, COMMAND_TIMEOUT_MS);
+      reject(new Error(`Command "${command.command}" timed out after ${effectiveTimeout}ms`));
+    }, effectiveTimeout);
     pending.set(command.id, { resolve, reject, timer });
     pluginSocket.send(JSON.stringify(command));
   });
@@ -3718,14 +3719,14 @@ var httpServer = import_node_http.default.createServer(async (req, res) => {
       sendJson(res, 400, { error: "Invalid JSON body" });
       return;
     }
-    const { command, params = {} } = body;
+    const { command, params = {}, timeout } = body;
     if (!command) {
       sendJson(res, 400, { error: "Missing required field: command" });
       return;
     }
     const id = (0, import_node_crypto.randomUUID)();
     try {
-      const result = await sendToPlugin({ id, command, params });
+      const result = await sendToPlugin({ id, command, params }, timeout);
       sendJson(res, 200, { result });
     } catch (err) {
       const message = err instanceof Error ? err.message : String(err);

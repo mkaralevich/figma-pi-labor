@@ -37,7 +37,7 @@ async function executeCommand(command, params) {
     // ── Read ────────────────────────────────────────────────────────────────
 
     case "get_node": {
-      const node = await figma.getNodeByIdAsync(params.nodeId);
+      const node = await safeGetNodeById(params.nodeId);
       if (!node) throw new Error(`Node not found: ${params.nodeId}`);
       return serializeNode(node);
     }
@@ -48,7 +48,7 @@ async function executeCommand(command, params) {
 
     case "get_children": {
       const node = params.nodeId
-        ? await figma.getNodeByIdAsync(params.nodeId)
+        ? await safeGetNodeById(params.nodeId)
         : figma.currentPage;
       if (!node) throw new Error(`Node not found: ${params.nodeId}`);
       if (!("children" in node)) throw new Error("Node has no children");
@@ -152,7 +152,7 @@ async function executeCommand(command, params) {
 
     case "move_node": {
       const node = await requireNode(params.nodeId);
-      const newParent = await figma.getNodeByIdAsync(params.parentId);
+      const newParent = await safeGetNodeById(params.parentId);
       if (!newParent || !("appendChild" in newParent)) {
         throw new Error("Target parent not found or cannot have children");
       }
@@ -227,7 +227,7 @@ async function executeCommand(command, params) {
     // ── Node full ──────────────────────────────────────────────────────────
 
     case "get_node_full": {
-      const node = await figma.getNodeByIdAsync(params.nodeId);
+      const node = await safeGetNodeById(params.nodeId);
       if (!node) throw new Error(`Node not found: ${params.nodeId}`);
       return serializeNodeFull(node);
     }
@@ -277,26 +277,17 @@ async function executeCommand(command, params) {
     // ── Run script ─────────────────────────────────────────────────────────
 
     case "run_script": {
-      // params.code: string — JS to run in the plugin context
-      // The script has access to `figma` and must return a value (or a Promise).
+      // Pass the real figma object — wrapping it in a JS Proxy conflicts with
+      // Figma's internal proxy mechanism and causes "proxy: inconsistent get"
+      // on ANY async API call (getNodeByIdAsync, setCurrentPageAsync, etc.).
       //
-      // Proxy notes:
-      // - figma is itself an internal Proxy in the Figma sandbox.
-      // - Wrapping it in another Proxy and returning val.bind(target) for functions
-      //   violates the JS Proxy invariant for non-configurable properties, throwing
-      //   "proxy: inconsistent get". We use Reflect.get as a pass-through instead,
-      //   which returns the exact same value the target has — satisfying the invariant.
-      // - Only getNodeById is remapped to getNodeByIdAsync (dynamic-page requirement).
-      const proxy = new Proxy(figma, {
-        get(target, prop, receiver) {
-          if (prop === "getNodeById") {
-            return (id) => target.getNodeByIdAsync(id);
-          }
-          return Reflect.get(target, prop, receiver);
-        },
-      });
-      const fn = new Function("figma", `"use strict"; return (async () => { ${params.code} })()`);
-      return await fn(proxy);
+      // safeGetNodeById is available as a helper for compound instance IDs
+      // (those containing ';') which getNodeByIdAsync can't resolve reliably.
+      const fn = new Function(
+        "figma", "safeGetNodeById",
+        `"use strict"; return (async () => { ${params.code} })()`
+      );
+      return await fn(figma, safeGetNodeById);
     }
 
     default:
@@ -306,8 +297,19 @@ async function executeCommand(command, params) {
 
 // ── Helpers ──────────────────────────────────────────────────────────────
 
+async function safeGetNodeById(id) {
+  // Compound instance IDs (containing ';') cause "proxy: inconsistent get"
+  // with getNodeByIdAsync. Use findOne as a reliable fallback.
+  if (typeof id === 'string' && id.includes(';')) {
+    const node = figma.currentPage.findOne(n => n.id === id);
+    if (node) return node;
+    // Fall through to getNodeByIdAsync if not on current page
+  }
+  return figma.getNodeByIdAsync(id);
+}
+
 async function requireNode(nodeId) {
-  const node = await figma.getNodeByIdAsync(nodeId);
+  const node = await safeGetNodeById(nodeId);
   if (!node) throw new Error(`Node not found: ${nodeId}`);
   return node;
 }
