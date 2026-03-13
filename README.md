@@ -1,4 +1,4 @@
-> Made in Shopify
+> Made @ Shopify
 
 # pi-figma-labor
 
@@ -12,21 +12,23 @@ Connects [pi-coding-agent](https://github.com/badlogic/pi-mono) to Figma.
 Message `pi`:
 
 ```
-Install this pi-extension https://github.com/mkaralevich/pi-figma-labor"
+Install this pi-extension https://github.com/mkaralevich/pi-figma-labor/extension"
 ```
 
 OR
 
-- Place extension in your `/extensions` folder
+- Copy the `extension/` folder into your `/extensions` folder
 - Spin up bridge via `/figma-labor-start` command
 - Footer shows `figma-labor ○` when bridge is running
-- In Figma, open [Pi Labor plugin](https://www.figma.com/community/plugin/1611556075783258900/figma-labor) to start connection
+- In Figma, open Pi Labor plugin ([Shopify](https://www.figma.com/community/plugin/1611556075783258900/figma-labor)) | (Public TBD) to start connection
 - Footer shows `figma-labor ✓` when the plugin is connected
-- Ask your pi to do things
+- Ask your `pi` to do things
 
 Use `figma-labor-stop` if you want to close connection.
 
-For MCP tools (like `take_screenshot`), install [figma-mcp](https://github.com/mkaralevich/figma-pi-mcp) extension.
+## Figma MCP
+
+Figma MCP is optional but can improve quality with tools like `take_screenshot`. Install [figma-mcp](https://github.com/mkaralevich/pi-figma-mcp) extension.
 
 ## How it works
 
@@ -42,13 +44,13 @@ For MCP tools (like `take_screenshot`), install [figma-mcp](https://github.com/m
 ## Development
 
 ```
-**`pi-extension/`**
+**`extension/`**
 Registers most used Figma tools the LLM can call, includes pre-built `bridge.js`
 
-**`figma-plugin/`**
+**`figma-labor/`** (in figma-labor repo)
 Figma desktop plugin. Connects to the bridge via WebSocket, executes Plugin API commands, returns results.
 
-**`figma-bridge/`**
+**`bridge-src/`**
 Bridge server source (Node.js HTTP + WebSocket). Only needed if you want to modify and rebuild the bridge.
 ```
 
@@ -77,10 +79,10 @@ Bridge server source (Node.js HTTP + WebSocket). Only needed if you want to modi
 
 ## Rebuilding the bridge
 
-If you modify `figma-bridge/src/server.ts`:
+If you modify `bridge-src/src/server.ts`:
 
 ```bash
-cd figma-bridge && npm install && npm run build
+cd bridge-src && npm install && npm run build
 ```
 
-This rebundles `bridge.js` into the `pi-extension/` directory.
+This rebundles `bridge.js` into the `extension/` directory.
