@@ -37,7 +37,7 @@ import { readFileSync, realpathSync } from "node:fs";
 import { join, dirname } from "node:path";
 import { fileURLToPath } from "node:url";
 
-const __dirname = realpathSync(dirname(fileURLToPath(import.meta.url)));
+const __dirname = dirname(realpathSync(fileURLToPath(import.meta.url)));
 const PROMPT_TEMPLATE = readFileSync(join(__dirname, "prompt.md"), "utf8");
 
 const BRIDGE_URL = "http://127.0.0.1:3846";
