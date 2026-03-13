@@ -7,17 +7,16 @@ Connects [pi-coding-agent](https://github.com/badlogic/pi-mono) to Figma.
 - Uses WS connection via local bridge that comes with pi extension
 - Uses [Figma plugin API](https://developers.figma.com/docs/plugins/api/api-reference/), so you can do everything it allows
 
-## Instructions
+## Install
 
 Message `pi`:
 
 ```
-Install this pi-extension https://github.com/mkaralevich/pi-figma-labor/extension"
+Install this pi-extension https://github.com/mkaralevich/pi-figma-labor"
 ```
 
-OR
+Or place extension in your `/extensions` folder
 
-- Copy the `extension/` folder into your `/extensions` folder
 - Spin up bridge via `/figma-labor-start` command
 - Footer shows `figma-labor ○` when bridge is running
 - In Figma, open Pi Labor plugin ([Shopify](https://www.figma.com/community/plugin/1611556075783258900/figma-labor)) | (Public TBD) to start connection
@@ -39,19 +38,6 @@ Figma MCP is optional but can improve quality with tools like `take_screenshot`.
 ↓ Figma plugin
 ↓ Plugin API
 . Figma canvas
-```
-
-## Development
-
-```
-**`extension/`**
-Registers most used Figma tools the LLM can call, includes pre-built `bridge.js`
-
-**`figma-labor/`** (in figma-labor repo)
-Figma desktop plugin. Connects to the bridge via WebSocket, executes Plugin API commands, returns results.
-
-**`bridge-src/`**
-Bridge server source (Node.js HTTP + WebSocket). Only needed if you want to modify and rebuild the bridge.
 ```
 
 ## Tools
